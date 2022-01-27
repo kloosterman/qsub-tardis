@@ -102,13 +102,13 @@ switch cmd
     % add it to the persistent lists
     list_jobid{end+1} = jobid;
     list_pbsid{end+1} = pbsid;
-
+    
   case 'del'
     sel = strcmp(jobid, list_jobid);
     % remove the job from the persistent lists
     list_jobid(sel) = [];
     list_pbsid(sel) = [];
-
+    
   case 'kill'
     sel = strcmp(jobid, list_jobid);
     if any(sel)
@@ -133,7 +133,7 @@ switch cmd
       list_jobid(sel) = [];
       list_pbsid(sel) = [];
     end
-
+    
   case 'killall'
     if ~isempty(list_jobid)
       % give an explicit warning, because chances are that the user will see messages from qdel
@@ -144,7 +144,7 @@ switch cmd
     for i=length(list_jobid):-1:1
       qsublist('kill', list_jobid{i}, list_pbsid{i});
     end
-
+    
   case 'completed'
     % cmd = 'completed' returns whether the job is completed as a boolean
     %
@@ -153,12 +153,12 @@ switch cmd
     % check also polls the status of the job. First checking the files and then the
     % job status ensures that we don't saturate the torque server with job-status
     % requests.
-
+    
     curPwd     = getcustompwd();
     outputfile = fullfile(curPwd, sprintf('%s_output.mat', jobid)); % if the job is aborted to a resource violation, there will not be an output file
     logout     = fullfile(curPwd, sprintf('%s.o*', jobid)); % note the wildcard in the file name
     logerr     = fullfile(curPwd, sprintf('%s.e*', jobid)); % note the wildcard in the file name
-
+    
     % poll the job status to confirm that the job truely completed
     if isfile(logout) && isfile(logerr) && ~isempty(pbsid)
       % only perform the more expensive check once the log files exist
@@ -179,9 +179,16 @@ switch cmd
           [dum, jobstatus] = system(['qstat -s z | grep ' pbsid ' | awk ''{print $5}''']);
           retval = strcmp(strtrim(jobstatus), 'z') | strcmp(strtrim(jobstatus), 'qw');
         case 'slurm'
-          % only return the status based on the presence of the output files
-          % FIXME it would be good to implement a proper check for slurm as well
-          retval = 1;
+          if ~isfile(outputfile)
+            % with Slurm log output and error are created upon job submission
+            % and are not a viable test to see if the job completed, so we
+            % check for the outputfile first
+            retval = 0;
+          else
+            % if the file is there, we can use squeue to verify that the job really left the queue
+            [dum, jobstatus] = system(['squeue -j ' pbsid ' -h -o %T']);
+            retval = isempty(jobstatus);
+          end
         case {'local','system'}
           % only return the status based on the presence of the output files
           % there is no way polling the batch execution system
@@ -194,20 +201,20 @@ switch cmd
     else
       retval = 0;
     end
-
+    
   case 'list'
     for i=1:length(list_jobid)
       fprintf('%s %s\n', list_jobid{i}, list_pbsid{i});
     end
-
+    
   case 'getjobid'
     % return the mathing jobid, given the pbsid
     retval = jobid;
-
+    
   case 'getpbsid'
     % return the mathing pbsid, given the jobid
     retval = pbsid;
-
+    
   otherwise
     error('unsupported command (%s)', cmd);
 end % switch
