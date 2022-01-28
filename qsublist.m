@@ -57,13 +57,13 @@ persistent list_jobid list_pbsid
 % locking it ensures that it does not accidentally get cleared if the m-file on disk gets updated
 mlock
 
-% if ~isempty(list_jobid) && isequal(list_jobid, list_pbsid)
-%   % it might also be system, but torque, sge, slurm and lsf will have other job identifiers
-%   backend = 'local';
-% else
-%   % use the environment variables to determine the backend
+if ~isempty(list_jobid) && isequal(list_jobid, list_pbsid)
+  % it might also be system, but torque, sge, slurm and lsf will have other job identifiers
+  backend = 'local';
+else
+  % use the environment variables to determine the backend
   backend = defaultbackend;
-% end
+end
 
 if nargin<1
   cmd = 'list';
