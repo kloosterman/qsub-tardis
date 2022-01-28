@@ -187,8 +187,7 @@ switch cmd
           else
             % if the file is there, we can use squeue to verify that the job really left the queue
             [dum, jobstatus] = system(['squeue -j ' pbsid ' -h -o %T']);
-            %             retval = isempty(jobstatus);
-            retval = contains(jobstatus, 'COMPLETED');
+            retval = isempty(jobstatus);
           end
         case {'local','system'}
           % only return the status based on the presence of the output files
