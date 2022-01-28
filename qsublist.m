@@ -57,13 +57,13 @@ persistent list_jobid list_pbsid
 % locking it ensures that it does not accidentally get cleared if the m-file on disk gets updated
 mlock
 
-if ~isempty(list_jobid) && isequal(list_jobid, list_pbsid)
-  % it might also be system, but torque, sge, slurm and lsf will have other job identifiers
-  backend = 'local';
-else
-  % use the environment variables to determine the backend
+% if ~isempty(list_jobid) && isequal(list_jobid, list_pbsid)
+%   % it might also be system, but torque, sge, slurm and lsf will have other job identifiers
+%   backend = 'local';
+% else
+%   % use the environment variables to determine the backend
   backend = defaultbackend;
-end
+% end
 
 if nargin<1
   cmd = 'list';
@@ -187,7 +187,8 @@ switch cmd
           else
             % if the file is there, we can use squeue to verify that the job really left the queue
             [dum, jobstatus] = system(['squeue -j ' pbsid ' -h -o %T']);
-            retval = isempty(jobstatus);
+            %             retval = isempty(jobstatus);
+            retval = contains(jobstatus, 'COMPLETED');
           end
         case {'local','system'}
           % only return the status based on the presence of the output files

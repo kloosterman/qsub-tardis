@@ -491,9 +491,14 @@ end
 
 switch backend
   case 'slurm'
-    % srun will not return a jobid (besides in verbose mode) we decided to use jobname=jobid instead to identify processes
-    % since the jobid is a uniq identifier for every job!
-    result = jobid;
+    %     % srun will not return a jobid (besides in verbose mode) we decided to use jobname=jobid instead to identify processes
+    %     % since the jobid is a uniq identifier for every job!
+    %     result = jobid;
+    % example result from sbatch:
+    %     result =    'Submitted batch job 1498656
+    %      '
+    tok = tokenize(result);
+    result = tok{4};    
   case 'local'
     % the job was executed by a local feval call, but the results will still be written in a job file
     result = jobid;
