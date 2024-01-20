@@ -375,7 +375,7 @@ switch backend
     
     if ~isempty(timreq) && ~isnan(timreq) && ~isinf(timreq)
       % TESTME this is experimental and needs more testing!
-      submitoptions = [submitoptions sprintf('--time=%d ', timreq+timoverhead)];
+      submitoptions = [submitoptions sprintf('--time=%d ', (timreq+timoverhead)./60)];
     end
     
     if ~isempty(memreq) && ~isnan(memreq) && ~isinf(memreq)
